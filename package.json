@@ -17,8 +17,7 @@
   "author": "simonguo.2009@gmail.com",
   "license": "MIT",
   "files": [
-    "CHANGELOG.md",
-    "lib"
+    "dist"
   ],
   "repository": {
     "type": "git",
