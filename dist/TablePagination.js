@@ -33,9 +33,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var propTypes = {
-  lengthMenu: _propTypes2.default.arrayOf(_react2.default.PropTypes.shape({
+  lengthMenu: _propTypes2.default.arrayOf(_propTypes2.default.shape({
     value: _propTypes2.default.number,
-    text: _propTypes2.default.oneOfType([_react2.default.PropTypes.string, _react2.default.PropTypes.number])
+    text: _propTypes2.default.oneOfType([_propTypes2.default.string, _propTypes2.default.number])
   })),
   showLengthMenu: _propTypes2.default.bool,
   showInfo: _propTypes2.default.bool,

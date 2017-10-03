@@ -86,7 +86,6 @@ const propTypes = {
 };
 
 const defaultProps = {
-  height: 200,
   rowHeight: 36,
   sortType: 'asc',
   hover: true,
@@ -106,6 +105,7 @@ class Table extends React.Component {
     super(props);
     this.state = {
       width: props.width,
+      height: props.height,
       columnWidth: 0,
       dataKey: 0,
       shouldFixedColumn: false,
@@ -535,18 +535,29 @@ class Table extends React.Component {
   }
 
   reportTableContextHeight() {
-    const table = this.table;
-    const rows = table.querySelectorAll(`.${this.prefix('row')}`);
-    const { height, rowHeight, headerHeight } = this.props;
+    let table = this.table;
+    let parentEl = table.parentNode
+    let parentRect = parentEl.getBoundingClientRect()
+    let parentHeight = parentRect.height
+
+    let rows = table.querySelectorAll(`.${this.prefix('row')}`);
+    let { height , rowHeight, headerHeight } = this.props;
+
+    if (!height) {
+      height = parentHeight || 400
+    }
+
     let contentHeight = 0;
     Array.from(rows).forEach((row) => {
       contentHeight += getHeight(row);
     });
 
-    const nextContentHeight = contentHeight - (headerHeight || rowHeight);
+    let nextContentHeight = contentHeight - (headerHeight || rowHeight);
     this.setState({
+      height,
       contentHeight: nextContentHeight
     });
+
     // 这里 -10 是为了让滚动条不挡住内容部分
     this.minScrollY = -(contentHeight - height) - 10;
     if (this.state.contentHeight !== nextContentHeight) {
@@ -593,14 +604,12 @@ class Table extends React.Component {
 
   renderMouseArea() {
 
-    const { height } = this.props;
-    const styles = { height };
+    let { height = 400 } = this.state
+    let styles = { height }
 
     return (
       <div
-        ref={(ref) => {
-          this.mouseArea = ref;
-        }}
+        ref={ref => this.mouseArea = ref }
         className={this.prefix('mouse-area')}
         style={styles}
       />
@@ -634,16 +643,17 @@ class Table extends React.Component {
   }
   renderTableBody(bodyCells, rowWidth) {
 
-    const {
+    let {
       headerHeight,
       rowHeight,
-      height,
       data,
       isTree,
       onRerenderRowHeight
     } = this.props;
+    
+    let { height = 400 } = this.state
 
-    const bodyStyles = {
+    let bodyStyles = {
       top: isTree ? 0 : headerHeight || rowHeight,
       height: height - (headerHeight || rowHeight)
     };
@@ -725,15 +735,16 @@ class Table extends React.Component {
   }
 
   renderScrollbar() {
-    const {
+    let {
       disabledScroll,
       headerHeight,
       rowHeight,
-      height,
       loading
     } = this.props;
 
-    const {
+    let { height = 400 } = this.state
+
+    let {
       contentWidth,
       contentHeight
     } = this.state;
@@ -787,17 +798,18 @@ class Table extends React.Component {
   }
 
   render() {
-    const {
+    let {
       children,
       className,
       width = 0,
-      height,
       style,
       rowHeight,
       isTree,
       hover,
       ...props
-  } = this.props;
+    } = this.props;
+
+    let { height = 400 } = this.state
 
     const { headerCells, bodyCells, allColumnsWidth } = this.getCells();
     const rowWidth = allColumnsWidth > width ? allColumnsWidth : width;

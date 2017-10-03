@@ -141,7 +141,6 @@ var propTypes = {
 };
 
 var defaultProps = {
-  height: 200,
   rowHeight: 36,
   sortType: 'asc',
   hover: true,
@@ -299,6 +298,7 @@ var Table = function (_React$Component) {
 
     _this.state = {
       width: props.width,
+      height: props.height,
       columnWidth: 0,
       dataKey: 0,
       shouldFixedColumn: false,
@@ -622,11 +622,20 @@ var Table = function (_React$Component) {
     key: 'reportTableContextHeight',
     value: function reportTableContextHeight() {
       var table = this.table;
+      var parentEl = table.parentNode;
+      var parentRect = parentEl.getBoundingClientRect();
+      var parentHeight = parentRect.height;
+
       var rows = table.querySelectorAll('.' + this.prefix('row'));
       var _props3 = this.props,
           height = _props3.height,
           rowHeight = _props3.rowHeight,
           headerHeight = _props3.headerHeight;
+
+
+      if (!height) {
+        height = parentHeight || 400;
+      }
 
       var contentHeight = 0;
       Array.from(rows).forEach(function (row) {
@@ -635,8 +644,10 @@ var Table = function (_React$Component) {
 
       var nextContentHeight = contentHeight - (headerHeight || rowHeight);
       this.setState({
+        height: height,
         contentHeight: nextContentHeight
       });
+
       // 这里 -10 是为了让滚动条不挡住内容部分
       this.minScrollY = -(contentHeight - height) - 10;
       if (this.state.contentHeight !== nextContentHeight) {
@@ -698,13 +709,14 @@ var Table = function (_React$Component) {
     value: function renderMouseArea() {
       var _this6 = this;
 
-      var height = this.props.height;
+      var _state$height = this.state.height,
+          height = _state$height === undefined ? 400 : _state$height;
 
       var styles = { height: height };
 
       return _react2.default.createElement('div', {
         ref: function ref(_ref2) {
-          _this6.mouseArea = _ref2;
+          return _this6.mouseArea = _ref2;
         },
         className: this.prefix('mouse-area'),
         style: styles
@@ -749,10 +761,11 @@ var Table = function (_React$Component) {
       var _props5 = this.props,
           headerHeight = _props5.headerHeight,
           rowHeight = _props5.rowHeight,
-          height = _props5.height,
           data = _props5.data,
           isTree = _props5.isTree,
           onRerenderRowHeight = _props5.onRerenderRowHeight;
+      var _state$height2 = this.state.height,
+          height = _state$height2 === undefined ? 400 : _state$height2;
 
 
       var bodyStyles = {
@@ -843,8 +856,9 @@ var Table = function (_React$Component) {
           disabledScroll = _props6.disabledScroll,
           headerHeight = _props6.headerHeight,
           rowHeight = _props6.rowHeight,
-          height = _props6.height,
           loading = _props6.loading;
+      var _state$height3 = this.state.height,
+          height = _state$height3 === undefined ? 400 : _state$height3;
       var _state = this.state,
           contentWidth = _state.contentWidth,
           contentHeight = _state.contentHeight;
@@ -914,12 +928,14 @@ var Table = function (_React$Component) {
           className = _props8.className,
           _props8$width = _props8.width,
           width = _props8$width === undefined ? 0 : _props8$width,
-          height = _props8.height,
           style = _props8.style,
           rowHeight = _props8.rowHeight,
           isTree = _props8.isTree,
           hover = _props8.hover,
-          props = _objectWithoutProperties(_props8, ['children', 'className', 'width', 'height', 'style', 'rowHeight', 'isTree', 'hover']);
+          props = _objectWithoutProperties(_props8, ['children', 'className', 'width', 'style', 'rowHeight', 'isTree', 'hover']);
+
+      var _state$height4 = this.state.height,
+          height = _state$height4 === undefined ? 400 : _state$height4;
 
       var _getCells = this.getCells(),
           headerCells = _getCells.headerCells,
