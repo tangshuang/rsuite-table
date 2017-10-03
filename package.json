@@ -1,10 +1,10 @@
 {
   "name": "rsuite-table",
-  "version": "2.0.1-beta.4",
+  "version": "2.0.1-ts",
   "description": "RSuite Table",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf lib && babel src --out-dir lib && cp -R src/less lib",
+    "build": "rm -rf dist && babel src --out-dir dist && cp -R src/less dist",
     "dev": "NODE_ENV=development webpack-dev-server  --inline --progress --colors --port 3100 --host 0.0.0.0 ",
     "docs": "rm -rf assets &&  NODE_ENV=production webpack && cp  -rf ./resources  ./assets ",
     "publish-docs": "node docs/gh-pages.js",
@@ -28,12 +28,12 @@
     "classnames": "^2.2.5",
     "dom-lib": "^0.2.4",
     "lodash": "^4.13.1",
-    "prop-types": "^15.5.10"
-  },
-  "peerDependencies": {
-    "react": "^0.14.9 || >=15.3.0",
-    "react-dom": "^0.14.9 || >=15.3.0",
-    "rsuite": ">=1.0.0"
+    "prop-types": "^15.5.10",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "rsuite": "^2.0.5",
+    "rsuite-affix": "^1.0.3",
+    "rsuite-theme": "^0.3.44"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",
@@ -78,12 +78,7 @@
     "markdown-loader": "2.0.0",
     "markdownloader": "1.0.5",
     "mocha": "^2.5.3",
-    "react": "^15.4.0",
-    "react-dom": "^15.4.0",
     "react-hot-loader": "^3.0.0-beta.6",
-    "rsuite": "^2.0.3",
-    "rsuite-affix": "1.0.3",
-    "rsuite-theme": "^2.0.0-beta.1-2",
     "sinon": "^2.3.8",
     "sinon-chai": "^2.12.0",
     "style-loader": "^0.13.1",
