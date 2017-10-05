@@ -116,7 +116,6 @@ class Table extends React.Component {
     this.mounted = false;
   }
 
-
   componentWillMount() {
     const { children = [] } = this.props;
     const shouldFixedColumn = Array.from(children).some(child => (
@@ -138,19 +137,26 @@ class Table extends React.Component {
   }
 
   componentDidMount() {
-    this.onWindowResizeListener = on(window, 'resize', debounce(this.reportTableWidth, 400));
+    this.onWindowResizeListener = on(window, 'resize', debounce(this.onWindowResize, 400));
     this.reportTableWidth();
     this.reportTableContextHeight();
+    this.updatePosition();
+  }
+  componentWillReceiveProps(nextProps) {
+    this._UpdateProps = true
   }
   shouldComponentUpdate(nextProps, nextState) {
-    return !isEqual(this.props, nextProps) || !isEqual(this.state, nextState);
+    return !isEqual(this.state, nextState) || this._UpdateProps
+  }
+  componentWillUpdate() {
+    this._UpdateProps = false
   }
   componentDidUpdate() {
+    this.reportTableWidth()
     this.reportTableContextHeight();
     this.reportTableContentWidth();
     this.updatePosition();
   }
-
   componentWillUnmount() {
     if (this.onWheelListener) {
       this.onWheelListener.off();
@@ -160,6 +166,15 @@ class Table extends React.Component {
     }
     this.isMounted = false;
   }
+
+  onWindowResize = () => {
+    this.table.style.height = 0 // 先把table的高度设为0，这样可以让外部的容器恢复正常的弹性高度
+    this.reportTableWidth()
+    this.reportTableContextHeight()
+    this.reportTableContentWidth()
+    this.updatePosition()
+  }
+
   onColumnResizeEnd = (columnWidth, cursorDelta, dataKey, index) => {
     this.setState({
       isColumnResizing: false,
@@ -395,7 +410,6 @@ class Table extends React.Component {
     if (this.state.shouldFixedColumn) {
       this.updatePositionByFixedCell();
     } else {
-
       const wheelStyle = {};
       const headerStyle = {};
       translateDOMPositionXY(wheelStyle, this.scrollX, this.scrollY);
@@ -509,13 +523,19 @@ class Table extends React.Component {
   }
 
   reportTableWidth = () => {
-    const table = this.table;
+    let table = this.table;
+    let previousTableWidth = this.state.width
     if (table) {
       this.setState({
         width: getWidth(table)
+      }, () => {
+        if (previousTableWidth !== this.state.width) {
+          this.scrollX = 0;
+          this.scrollbarX && this.scrollbarX.resetScrollBarPosition();
+          this.handleScrollX(0)
+        }
       });
     }
-
   }
 
   reportTableContentWidth() {
@@ -523,15 +543,16 @@ class Table extends React.Component {
 
     const row = table.querySelectorAll(`.${this.prefix('row-header')}`)[0];
     const contentWidth = getWidth(row);
+    let currentContentWidth = this.state.contentWidth
 
-    this.setState({ contentWidth });
-    // 这里 -10 是为了让滚动条不挡住内容部分
-    this.minScrollX = -(contentWidth - this.state.width) - 10;
-
-    if (this.state.contentWidth !== contentWidth) {
-      this.scrollX = 0;
-      this.scrollbarX && this.scrollbarX.resetScrollBarPosition();
-    }
+    this.setState({ contentWidth }, () => {
+      // 这里 -10 是为了让滚动条不挡住内容部分
+      this.minScrollX = -(contentWidth - this.state.width) - 10;
+      if (currentContentWidth !== contentWidth) {
+        this.scrollX = 0;
+        this.scrollbarX && this.scrollbarX.resetScrollBarPosition();
+      }
+    });
   }
 
   reportTableContextHeight() {
@@ -552,18 +573,19 @@ class Table extends React.Component {
       contentHeight += getHeight(row);
     });
 
+    let currentContentHeight = this.state.contentHeight
     let nextContentHeight = contentHeight - (headerHeight || rowHeight);
     this.setState({
       height,
       contentHeight: nextContentHeight
+    }, () => {
+      // 这里 -10 是为了让滚动条不挡住内容部分
+      this.minScrollY = -(contentHeight - height) - 10;
+      if (currentContentHeight !== nextContentHeight) {
+        this.scrollY = 0;
+        this.scrollbarY && this.scrollbarY.resetScrollBarPosition();
+      }
     });
-
-    // 这里 -10 是为了让滚动条不挡住内容部分
-    this.minScrollY = -(contentHeight - height) - 10;
-    if (this.state.contentHeight !== nextContentHeight) {
-      this.scrollY = 0;
-      this.scrollbarY && this.scrollbarY.resetScrollBarPosition();
-    }
   }
 
   renderRow(props, cells) {
@@ -806,6 +828,7 @@ class Table extends React.Component {
       rowHeight,
       isTree,
       hover,
+      forceUpdate,
       ...props
     } = this.props;
 

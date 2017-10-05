@@ -167,6 +167,14 @@ var Table = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Table.__proto__ || Object.getPrototypeOf(Table)).call(this, props));
 
+    _this.onWindowResize = function () {
+      _this.table.style.height = 0;
+      _this.reportTableWidth();
+      _this.reportTableContextHeight();
+      _this.reportTableContentWidth();
+      _this.updatePosition();
+    };
+
     _this.onColumnResizeEnd = function (columnWidth, cursorDelta, dataKey, index) {
       _this.setState(_defineProperty({
         isColumnResizing: false
@@ -289,9 +297,16 @@ var Table = function (_React$Component) {
 
     _this.reportTableWidth = function () {
       var table = _this.table;
+      var previousTableWidth = _this.state.width;
       if (table) {
         _this.setState({
           width: (0, _domLib.getWidth)(table)
+        }, function () {
+          if (previousTableWidth !== _this.state.width) {
+            _this.scrollX = 0;
+            _this.scrollbarX && _this.scrollbarX.resetScrollBarPosition();
+            _this.handleScrollX(0);
+          }
         });
       }
     };
@@ -335,18 +350,30 @@ var Table = function (_React$Component) {
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
-      this.onWindowResizeListener = (0, _domLib.on)(window, 'resize', (0, _debounce2.default)(this.reportTableWidth, 400));
+      this.onWindowResizeListener = (0, _domLib.on)(window, 'resize', (0, _debounce2.default)(this.onWindowResize, 400));
       this.reportTableWidth();
       this.reportTableContextHeight();
+      this.updatePosition();
+    }
+  }, {
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      this._UpdateProps = true;
     }
   }, {
     key: 'shouldComponentUpdate',
     value: function shouldComponentUpdate(nextProps, nextState) {
-      return !(0, _isEqual2.default)(this.props, nextProps) || !(0, _isEqual2.default)(this.state, nextState);
+      return !(0, _isEqual2.default)(this.state, nextState) || this._UpdateProps;
+    }
+  }, {
+    key: 'componentWillUpdate',
+    value: function componentWillUpdate() {
+      this._UpdateProps = false;
     }
   }, {
     key: 'componentDidUpdate',
     value: function componentDidUpdate() {
+      this.reportTableWidth();
       this.reportTableContextHeight();
       this.reportTableContentWidth();
       this.updatePosition();
@@ -500,7 +527,6 @@ var Table = function (_React$Component) {
       if (this.state.shouldFixedColumn) {
         this.updatePositionByFixedCell();
       } else {
-
         var wheelStyle = {};
         var headerStyle = {};
         (0, _domLib.translateDOMPositionXY)(wheelStyle, this.scrollX, this.scrollY);
@@ -604,23 +630,28 @@ var Table = function (_React$Component) {
   }, {
     key: 'reportTableContentWidth',
     value: function reportTableContentWidth() {
+      var _this6 = this;
+
       var table = this.table;
 
       var row = table.querySelectorAll('.' + this.prefix('row-header'))[0];
       var contentWidth = (0, _domLib.getWidth)(row);
+      var currentContentWidth = this.state.contentWidth;
 
-      this.setState({ contentWidth: contentWidth });
-      // 这里 -10 是为了让滚动条不挡住内容部分
-      this.minScrollX = -(contentWidth - this.state.width) - 10;
-
-      if (this.state.contentWidth !== contentWidth) {
-        this.scrollX = 0;
-        this.scrollbarX && this.scrollbarX.resetScrollBarPosition();
-      }
+      this.setState({ contentWidth: contentWidth }, function () {
+        // 这里 -10 是为了让滚动条不挡住内容部分
+        _this6.minScrollX = -(contentWidth - _this6.state.width) - 10;
+        if (currentContentWidth !== contentWidth) {
+          _this6.scrollX = 0;
+          _this6.scrollbarX && _this6.scrollbarX.resetScrollBarPosition();
+        }
+      });
     }
   }, {
     key: 'reportTableContextHeight',
     value: function reportTableContextHeight() {
+      var _this7 = this;
+
       var table = this.table;
       var parentEl = table.parentNode;
       var parentRect = parentEl.getBoundingClientRect();
@@ -642,18 +673,19 @@ var Table = function (_React$Component) {
         contentHeight += (0, _domLib.getHeight)(row);
       });
 
+      var currentContentHeight = this.state.contentHeight;
       var nextContentHeight = contentHeight - (headerHeight || rowHeight);
       this.setState({
         height: height,
         contentHeight: nextContentHeight
+      }, function () {
+        // 这里 -10 是为了让滚动条不挡住内容部分
+        _this7.minScrollY = -(contentHeight - height) - 10;
+        if (currentContentHeight !== nextContentHeight) {
+          _this7.scrollY = 0;
+          _this7.scrollbarY && _this7.scrollbarY.resetScrollBarPosition();
+        }
       });
-
-      // 这里 -10 是为了让滚动条不挡住内容部分
-      this.minScrollY = -(contentHeight - height) - 10;
-      if (this.state.contentHeight !== nextContentHeight) {
-        this.scrollY = 0;
-        this.scrollbarY && this.scrollbarY.resetScrollBarPosition();
-      }
     }
   }, {
     key: 'renderRow',
@@ -707,7 +739,7 @@ var Table = function (_React$Component) {
   }, {
     key: 'renderMouseArea',
     value: function renderMouseArea() {
-      var _this6 = this;
+      var _this8 = this;
 
       var _state$height = this.state.height,
           height = _state$height === undefined ? 400 : _state$height;
@@ -716,7 +748,7 @@ var Table = function (_React$Component) {
 
       return _react2.default.createElement('div', {
         ref: function ref(_ref2) {
-          return _this6.mouseArea = _ref2;
+          return _this8.mouseArea = _ref2;
         },
         className: this.prefix('mouse-area'),
         style: styles
@@ -725,7 +757,7 @@ var Table = function (_React$Component) {
   }, {
     key: 'renderTableHeader',
     value: function renderTableHeader(headerCells, rowWidth) {
-      var _this7 = this;
+      var _this9 = this;
 
       var _props4 = this.props,
           rowHeight = _props4.rowHeight,
@@ -733,7 +765,7 @@ var Table = function (_React$Component) {
 
       var row = this.renderRow({
         rowRef: function rowRef(ref) {
-          _this7.tableHeader = ref;
+          _this9.tableHeader = ref;
         },
         width: rowWidth,
         height: rowHeight,
@@ -746,7 +778,7 @@ var Table = function (_React$Component) {
         'div',
         {
           ref: function ref(_ref3) {
-            _this7.headerWrapper = _ref3;
+            _this9.headerWrapper = _ref3;
           },
           className: this.prefix('header-row-wrapper')
         },
@@ -756,7 +788,7 @@ var Table = function (_React$Component) {
   }, {
     key: 'renderTableBody',
     value: function renderTableBody(bodyCells, rowWidth) {
-      var _this8 = this;
+      var _this10 = this;
 
       var _props5 = this.props,
           headerHeight = _props5.headerHeight,
@@ -785,7 +817,7 @@ var Table = function (_React$Component) {
             nextRowHeight = onRerenderRowHeight(rowData) || rowHeight;
           }
 
-          var row = _this8.renderRowData(bodyCells, rowData, {
+          var row = _this10.renderRowData(bodyCells, rowData, {
             index: index,
             top: top,
             rowWidth: rowWidth,
@@ -806,7 +838,7 @@ var Table = function (_React$Component) {
         'div',
         {
           ref: function ref(_ref5) {
-            _this8.tableBody = _ref5;
+            _this10.tableBody = _ref5;
           },
           className: this.prefix('body-row-wrapper'),
           style: bodyStyles,
@@ -820,7 +852,7 @@ var Table = function (_React$Component) {
             style: wheelStyles,
             className: this.prefix('body-wheel-area'),
             ref: function ref(_ref4) {
-              _this8.wheelWrapper = _ref4;
+              _this10.wheelWrapper = _ref4;
             }
           },
           rows
@@ -850,7 +882,7 @@ var Table = function (_React$Component) {
   }, {
     key: 'renderScrollbar',
     value: function renderScrollbar() {
-      var _this9 = this;
+      var _this11 = this;
 
       var _props6 = this.props,
           disabledScroll = _props6.disabledScroll,
@@ -876,7 +908,7 @@ var Table = function (_React$Component) {
           onScroll: this.handleScrollX,
           scrollLength: contentWidth,
           ref: function ref(_ref6) {
-            _this9.scrollbarX = _ref6;
+            _this11.scrollbarX = _ref6;
           }
         }),
         _react2.default.createElement(_Scrollbar2.default, {
@@ -885,7 +917,7 @@ var Table = function (_React$Component) {
           scrollLength: contentHeight,
           onScroll: this.handleScrollY,
           ref: function ref(_ref7) {
-            _this9.scrollbarY = _ref7;
+            _this11.scrollbarY = _ref7;
           }
         })
       );
@@ -921,7 +953,7 @@ var Table = function (_React$Component) {
     key: 'render',
     value: function render() {
       var _classNames,
-          _this10 = this;
+          _this12 = this;
 
       var _props8 = this.props,
           children = _props8.children,
@@ -932,7 +964,8 @@ var Table = function (_React$Component) {
           rowHeight = _props8.rowHeight,
           isTree = _props8.isTree,
           hover = _props8.hover,
-          props = _objectWithoutProperties(_props8, ['children', 'className', 'width', 'style', 'rowHeight', 'isTree', 'hover']);
+          forceUpdate = _props8.forceUpdate,
+          props = _objectWithoutProperties(_props8, ['children', 'className', 'width', 'style', 'rowHeight', 'isTree', 'hover', 'forceUpdate']);
 
       var _state$height4 = this.state.height,
           height = _state$height4 === undefined ? 400 : _state$height4;
@@ -958,7 +991,7 @@ var Table = function (_React$Component) {
           className: clesses,
           style: styles,
           ref: function ref(_ref8) {
-            _this10.table = _ref8;
+            _this12.table = _ref8;
           }
         }),
         this.renderTableHeader(headerCells, rowWidth),

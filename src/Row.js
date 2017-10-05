@@ -40,7 +40,7 @@ class Row extends React.Component {
     }, className);
 
     const styles = {
-      minWidth: width,
+      width: width,
       height: isHeaderRow ? headerHeight : height,
       ...style
     };

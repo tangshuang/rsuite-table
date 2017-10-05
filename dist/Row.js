@@ -83,7 +83,7 @@ var Row = function (_React$Component) {
       var classes = (0, _classnames2.default)(this.prefix('row'), _defineProperty({}, this.prefix('row-header'), isHeaderRow), className);
 
       var styles = _extends({
-        minWidth: width,
+        width: width,
         height: isHeaderRow ? headerHeight : height
       }, style);
       (0, _domLib.translateDOMPositionXY)(styles, 0, top);
