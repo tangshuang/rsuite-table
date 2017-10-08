@@ -168,11 +168,16 @@ var Table = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (Table.__proto__ || Object.getPrototypeOf(Table)).call(this, props));
 
     _this.onWindowResize = function () {
-      _this.table.style.height = 0;
+      var parentNode = _this.table.parentNode;
+      var overflow = parentNode.style.overflow;
+      parentNode.style.overflow = 'hidden'; // 这样可以让外部的容器恢复正常的弹性高度，防止被table撑开之后根本无法改变大小
+
       _this.reportTableWidth();
       _this.reportTableContextHeight();
       _this.reportTableContentWidth();
       _this.updatePosition();
+
+      parentNode.style.overflow = overflow;
     };
 
     _this.onColumnResizeEnd = function (columnWidth, cursorDelta, dataKey, index) {
@@ -350,7 +355,7 @@ var Table = function (_React$Component) {
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
-      this.onWindowResizeListener = (0, _domLib.on)(window, 'resize', (0, _debounce2.default)(this.onWindowResize, 400));
+      this.onWindowResizeListener = (0, _domLib.on)(window, 'resize', (0, _debounce2.default)(this.onWindowResize, 100));
       this.reportTableWidth();
       this.reportTableContextHeight();
       this.updatePosition();

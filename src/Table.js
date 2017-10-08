@@ -137,7 +137,7 @@ class Table extends React.Component {
   }
 
   componentDidMount() {
-    this.onWindowResizeListener = on(window, 'resize', debounce(this.onWindowResize, 400));
+    this.onWindowResizeListener = on(window, 'resize', debounce(this.onWindowResize, 100));
     this.reportTableWidth();
     this.reportTableContextHeight();
     this.updatePosition();
@@ -168,11 +168,16 @@ class Table extends React.Component {
   }
 
   onWindowResize = () => {
-    this.table.style.height = 0 // 先把table的高度设为0，这样可以让外部的容器恢复正常的弹性高度
+    let parentNode = this.table.parentNode
+    let overflow = parentNode.style.overflow
+    parentNode.style.overflow = 'hidden' // 这样可以让外部的容器恢复正常的弹性高度，防止被table撑开之后根本无法改变大小
+    
     this.reportTableWidth()
     this.reportTableContextHeight()
     this.reportTableContentWidth()
     this.updatePosition()
+
+    parentNode.style.overflow = overflow
   }
 
   onColumnResizeEnd = (columnWidth, cursorDelta, dataKey, index) => {
@@ -638,7 +643,6 @@ class Table extends React.Component {
     );
   }
 
-
   renderTableHeader(headerCells, rowWidth) {
     const { rowHeight, headerHeight } = this.props;
     const row = this.renderRow({
@@ -663,8 +667,8 @@ class Table extends React.Component {
       </div>
     );
   }
-  renderTableBody(bodyCells, rowWidth) {
 
+  renderTableBody(bodyCells, rowWidth) {
     let {
       headerHeight,
       rowHeight,
