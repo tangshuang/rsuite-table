@@ -16,6 +16,13 @@
 
 [![Travis][build-badge]][build] [![Coverage Status][coverage-badge]][coverage]
 
+## fork的改动
+
+1. 修改了不少bug
+2. 主要修复了table高度自适应问题
+
+具体可以看 https://github.com/tangshuang/rsuite-table/commits/master
+
 ## # 快速开始
 
 安装：
